@@ -2,7 +2,7 @@
 
 ##Features
 
- ###The forum will consist of posts, grouped under a topic, and comments for each post.
+###The forum will consist of posts, grouped under a topic, and comments for each post.
 
 - A User can view all topics
 - A user can view all the posts listed in a topic
