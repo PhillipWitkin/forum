@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Comments</title>
+</head>
+<body>
+  <h1> All discussion for {{postTitle}}</h1>
+  <h2>{{postContent}}</h2>
+  <h3> by {{postAuthor}}</h3> 
+  {{#allComments}}
+  {{#allAuthors}}  
+    <ul>
+      <li> {{contents}} </li>
+      <li> written by {{forumName}} </li>
+    </ul>
+  {{/AllAuthors}}   
+  {{/allComments}}
+  <a href="topics/topic_{{topic_id}}/posts/post_{{id}}/comments/new_comment">Comment on this post</a>   
+  <a href="/topics/topic_{{topic_id}}/posts">Back to all posts</a>
+</body> 
+</html>

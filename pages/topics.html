@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Topics</title>
+</head>
+<body>
+  <h1>Current Topics</h1>
+  <h2>Click any topic to see what ideas are being discussed.</h2> 
+  <ul>
+    {{#allTopics}}
+      <li><a href="/topics/topic_{{id}}/posts">{{topic_title}}</a></li>
+    {{/allTopics}}
+  </ul>
+</body> 
+</html>

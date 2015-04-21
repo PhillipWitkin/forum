@@ -10,6 +10,8 @@
     "method-override": "^2.3.2",
     "morgan": "^1.5.2",
     "mustache": "^2.0.0",
+    "nodemon": "^1.3.7",
+    "request": "^2.55.0",
     "sqlite3": "^3.0.5"
   }
 }
