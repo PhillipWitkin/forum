@@ -7,16 +7,20 @@
 <body>
     <h1>All posted discussions for {{topic_title}}</h1>
     <h2>Click any post title to read the full content and comments, or create a new post of your own</h2> 
-    {{#allPosts}}
-    <!-- {{#allAuthors}} -->
+    
+    {{#allPosts}} 
+
       <ul>
-        <li><a href="/topics/topic_{{topic_id}}/posts/post_{{id}}/comments">{{post_title}}</a></li>
-        <li>{{forumName}}</li>
+        <li>
+          <a href="/topics/{{topic_id}}/posts/{{postID}}/comments">{{post_title}}</a>
+        </li>
+        <li>{{forumName}} {{post_author}}</li>
       </ul> 
-    <!-- {{/allAuthors}} -->
-        
-    {{/allPosts}}
-    <a href="/topics/topic_{{topic_id}}/posts/new_post">Create a new discussion post</a>   
+
+    {{/allPosts}} 
+ 
+  
+  <a href="/topics/{{topic_id}}/posts/new_post">Create a new discussion post</a>   
 
   <a href="/topics">Back to Topics</a>
 </body> 

@@ -6,15 +6,13 @@
 </head>
 <body>
   <h1> All discussion for {{postTitle}}</h1>
-  <h2>{{postContent}}</h2>
+  <h2>{{postContents}}</h2>
   <h3> by {{postAuthor}}</h3> 
-  {{#allComments}}
-  {{#allAuthors}}  
+  {{#allComments}} 
     <ul>
       <li> {{contents}} </li>
       <li> written by {{forumName}} </li>
-    </ul>
-  {{/AllAuthors}}   
+    </ul>  
   {{/allComments}}
   <a href="topics/topic_{{topic_id}}/posts/post_{{id}}/comments/new_comment">Comment on this post</a>   
   <a href="/topics/topic_{{topic_id}}/posts">Back to all posts</a>

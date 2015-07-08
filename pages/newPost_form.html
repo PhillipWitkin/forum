@@ -6,7 +6,7 @@
 </head>
 <body>
   <h1> Create a new post under topic {{topic_title}}</h1>
-  <form action="/topics/topic_{{id}}/posts" method="POST">
+  <form action="/topics/{{id}}/posts" method="POST">
     
     <label>
       Title:
@@ -20,7 +20,7 @@
 
     <label>
       Author:
-      <input type="text" name="user_id"/>
+      <input type="text" name="post_author"/>
     </label>
     
     <button>Submit Post</button>

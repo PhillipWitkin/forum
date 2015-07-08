@@ -13,16 +13,16 @@ db.serialize(function(){
 
   db.run("INSERT INTO users (forumName, name) VALUES ('Lucacious Primate', 'Phil');")
 
-  db.run("INSERT INTO posts (post_title, post_contents, post_user_id, topic_id, popularity, location) VALUES ('The Golden Ratio', 'It appears in lots of things', 1, 1, 0, 'NY');")
+  db.run("INSERT INTO posts (post_title, post_contents, user_id, topic_id, popularity, location) VALUES ('The Golden Ratio', 'It appears in lots of things', 1, 1, 0, 'NY');")
 
-  db.run("INSERT INTO posts (post_title, post_contents, post_user_id, topic_id, popularity, location) VALUES ('Fractal Geometry', 'Recursivity...', 1, 1, 0, 'NY');")
+  db.run("INSERT INTO posts (post_title, post_contents, user_id, topic_id, popularity, location) VALUES ('Fractal Geometry', 'Recursivity...', 1, 1, 0, 'NY');")
 
-  db.run("INSERT INTO posts (post_title, post_contents, post_user_id, topic_id, popularity, location) VALUES ('Unity of the Self', 'An unrelenting dogma pervading much of western psychology is that the Self is best represented as a unity, or essentially unified manifold of discreet aspects or processes....', 2, 2, 0, 'NY');")
+  db.run("INSERT INTO posts (post_title, post_contents, user_id, topic_id, popularity, location) VALUES ('Unity of the Self', 'An unrelenting dogma pervading much of western psychology is that the Self is best represented as a unity, or essentially unified manifold of discreet aspects or processes....', 2, 2, 0, 'NY');")
 
-  db.run("INSERT INTO comments (contents, comment_user_id, post_id) VALUES ('Like Seashells', 2, 1);")
+  db.run("INSERT INTO comments (contents, user_id, post_id) VALUES ('Like Seashells', 2, 1);")
 
-  db.run("INSERT INTO comments (contents, comment_user_id, post_id) VALUES ('And trees. Really, most organic forms have some amount of self similarity. Nature recycles when possible.', 1, 1);")
+  db.run("INSERT INTO comments (contents, user_id, post_id) VALUES ('And trees. Really, most organic forms have some amount of self similarity. Nature recycles when possible.', 1, 2);")
 
-  db.run("INSERT INTO comments (contents, comment_user_id, post_id) VALUES ('An example with reference to a specific theory and its terms might be useful', 2, 2);")  
+  db.run("INSERT INTO comments (contents, user_id, post_id) VALUES ('An example with reference to a specific theory and its terms might be useful', 2, 3);")  
 
 })
