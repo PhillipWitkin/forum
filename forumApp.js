@@ -95,6 +95,7 @@ app.post('/topics/:id/posts', function(req, res) {
 app.get('/topics/:topic_id/posts/:post_id/comments', function(req, res) {
   console.log(req.params)
   var postId = req.params.post_id
+  var topicId = req.params.topic_id
   db.serialize(function() {
     //get all comments for the post, with each comment's author
     db.all("SELECT * FROM comments LEFT JOIN users ON (users.userID = comments.user_id) WHERE (post_id = $postId)", {$postId: postId}, function(err, comments){
@@ -109,13 +110,15 @@ app.get('/topics/:topic_id/posts/:post_id/comments', function(req, res) {
     function displayComments(comments, post) {
 
       var template = fs.readFileSync('./pages/comments.html', 'utf8')
-      var renderedHtml = Mustache.render(template, {
+      var renderedHtmlComments = Mustache.render(template, {
         allComments: comments,
         postTitle: post.post_title,
         postContents: post.post_contents,
-        postAuthor: post.forumName
+        postAuthor: post.forumName,
+        topic_id: topicId,
+        post_id: postId
       })
-      res.send(renderedHtml)
+      res.send(renderedHtmlComments)
     }
   
   })//end serialize
@@ -124,29 +127,41 @@ app.get('/topics/:topic_id/posts/:post_id/comments', function(req, res) {
 
 
 //form for new comment
-app.get('/topics/:topic_id/posts/:post_id/comments/new_comments', function(req, res) {
-  var template = fs.readFileSync('/pages/newComment_form.html', 'utf8');
-  var htmlNewCommentForm = Mustache.render(template, )
-  res.send(htmlNewCommentForm)
+app.get('/topics/:topic_id/posts/:post_id/comments/new_comment', function(req, res) {
+  var postId = req.params.post_id
+  var topicId = req.params.topic_id
+  db.all("SELECT * FROM comments INNER JOIN posts ON (posts.postID = comments.post_id) LEFT JOIN users ON (users.userID = posts.user_id) WHERE (post_id = $postId)", {$postId: postId}, function(err, posts){
+    var postForComment = posts[0]
+    var template = fs.readFileSync('./pages/newComment_form.html', 'utf8');
+    var htmlNewCommentForm = Mustache.render(template, {
+      topic_id: topicId,
+      post_id: postId,
+      postTitle: postForComment.post_title,
+      postContents: postForComment.post_contents,
+      postUserName: postForComment.forumName,
+      postAuthor: postForComment.post_author
+    })
+  
+    res.send(htmlNewCommentForm)
+  })
 })
 
 //adds a new comment under a post
 app.post('/topics/:topic_id/posts/:post_id/comments', function(req, res) {
+  // gets location for post
   var topicId = req.params.topic_id
   var postId = req.params.post_id
   var newComment = req.body
 
-  // gets location for post
-
     //insert comment to database
-    db.run("INSERT INTO comments (contents, user_id, post_id, location) VALUES ($contents, $user_id, $post_id)", {
+    db.run("INSERT INTO comments (contents, comment_author, post_id) VALUES ($contents, $comment_author, $post_id)", {
       $contents: newComment.contents,
       $comment_author: newComment.author,
       $post_id: postId
       // $location: ,
       // $date: 
     })
-  res.redirect('/topics/'+ topic_id +'/posts/'+ post_id + '/comments')
+  res.redirect('/topics/'+ topicId +'/posts/'+ postId + '/comments')
 })
 
 //updates popularity for a post

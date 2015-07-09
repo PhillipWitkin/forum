@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>New Post</title>
+</head>
+<body>
+  <h1> Add a new comment for {{postTitle}}</h1>
+  <h2> Originally posted by {{postUserName}} {{postAuthor}}</h2>
+
+  <form action="/topics/{{topic_id}}/posts/{{post_id}}/comments" method="POST">
+    
+    <label>
+      New Comment:
+      <input type="text" name="contents" placeholder="your comment"/>
+    </label>
+    
+    <label>
+      Author:
+      <input type="text" name="author"/>
+    </label>
+    
+    <button>Submit Comment</button>
+
+  </form>
+</body>
+</html>
