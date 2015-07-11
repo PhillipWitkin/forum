@@ -7,4 +7,4 @@ db.run("CREATE TABLE posts (postID INTEGER PRIMARY KEY AUTOINCREMENT, post_title
 
 db.run("CREATE TABLE comments (commentID INTEGER PRIMARY KEY AUTOINCREMENT, contents VARCHAR, comment_author, user_id INTEGER, post_id INTEGER, location VARCHAR, date VARCHAR);")
 
-db.run("CREATE TABLE users (userID INTEGER PRIMARY KEY AUTOINCREMENT, forumName VARCHAR, name VARCHAR);")
+db.run("CREATE TABLE users (userID INTEGER PRIMARY KEY AUTOINCREMENT, forumName VARCHAR, name VARCHAR, username VARCHAR, password VARCHAR);")

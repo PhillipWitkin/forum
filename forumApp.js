@@ -7,21 +7,118 @@ var morgan = require('morgan');
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
 
+var cookieParser = require('cookie-parser');
+var cookieSession = require('cookie-session')
+
+var flash = require('connect-flash');
+var bcrypt = require('bcrypt');
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+
 var db = new sqlite3.Database('./forumData.db');
 var app = express();
 
+app.use(express.static(__dirname + '/public'));
 app.use(morgan('dev'));
-app.use(bodyParser.urlencoded({ extended: false}))
+app.use(bodyParser.urlencoded({ extended: false}));
 app.use(methodOverride('_method'));
+app.use(cookieParser());
+// app.use(session({ cookie: { maxAge: 60000 }}));
+app.use(cookieSession({name: 'session', keys:['userID']}))
+app.use(flash({message: 'message'}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+//async function to generate hash from password
+function hashPassword(password){
+  bcrypt.hash(password, 10, function(err, hash){
+    console.log(hash)
+    //store hash in DB
+  })
+}
+//sync
+// var hashedPassword = bcrypt.hashSync(password, 10)
+
+//sync function to compare password string with hash in DB
+var verifyPassword = function(password, hash){
+  return bcrypt.compareSync(password, hash)
+}
+
+passport.use(new LocalStrategy(
+{passReqToCallback : true},
+  function(req, username, password, done){
+    db.serialize(function(){
+      db.all('SELECT password FROM users WHERE (username = $username)',{$username: username}, function(err, userData){
+        if (!userData) {
+          return done(null, false, req.flash('message', "No username found."))
+        }
+        console.log(password)
+        console.log(userData[0].password)
+        var passwordStatus = verifyPassword(password, userData[0].password)
+        // bcrypt.compare(password, userData.password, function(err, res){       
+        // })
+        if (passwordStatus === false){
+          return done(null, false, req.flash('message', "Incorrect password."))
+          
+        }else if (passwordStatus === true){
+          db.all('SELECT username, userID FROM users WHERE (username = $username)', {$username: username}, function(err, user){
+            return done(null, user[0])
+          })
+        }
+
+      })
+      
+    })//end serialize
+  }
+))
+
+passport.serializeUser(function(user, done){
+  return done(null, user.userID)
+})
+
+passport.deserializeUser(function(userID, done){
+  db.all('SELECT userID, username FROM users WHERE (userID = $userID)',{$userID: userID}, function(err, userData){
+    if (!userData){
+      return done(null, false)
+    }
+    return done(null, userData[0])
+  })
+})
 
 
+//home page
 app.get('/', function(req, res){
   var htmlIndex = fs.readFileSync('./pages/index.html', 'utf8');
   res.send(htmlIndex)
 })
 
+// //login page
+app.get('/login', function(req, res){
+  console.log(req.flash('message'))
+  var loginMessage = req.flash('message')
+  
+  var templateLogin = fs.readFileSync('./pages/login.html', 'utf8');
+  var htmlLogin = Mustache.render(templateLogin, {message: loginMessage});
+  res.send(htmlLogin)
+})
+
+//login attempt
+app.post('/login', passport.authenticate('local', {
+  successRedirect: '/topics',
+  failureRedirect: '/login',
+  failureFlash: true
+}))
+
+//logout
+app.get('/logout', function(req, res){
+  req.logout();
+  res.redirect('/');
+})
+
+
 //lists all topics
 app.get('/topics', function(req, res) {
+  console.log(req.user)
   var topicsTemplate = fs.readFileSync('./pages/topics.html', 'utf8');
   db.all('SELECT * FROM topics', function(err, topics) {
     var htmlTopics = Mustache.render(topicsTemplate, {allTopics: topics});
@@ -74,17 +171,17 @@ app.get('/topics/:id/posts/new_post', function(req, res) {
 app.post('/topics/:id/posts', function(req, res) {
   console.log(req.params)
   var topicId = req.params.id
-  var newPost = req.body
+  var postNew = req.body
 
   // gets location for post
 
     //insert post to database
     db.run("INSERT INTO posts (post_title, post_contents, post_author, topic_id) VALUES ($title, $contents, $author, $topic_id)", {
-      $title: newPost.post_title,
-      $contents: newPost.post_contents,
+      $title: postNew.post_title,
+      $contents: postNew.post_contents,
+      $topic_id: topicId,
+      $author: postNew.post_author
       // $user_id: newPost.user_id,
-      $author: newPost.post_author,
-      $topic_id: topicId
       // $location: ,
       // $date: 
     })
@@ -156,8 +253,8 @@ app.post('/topics/:topic_id/posts/:post_id/comments', function(req, res) {
     //insert comment to database
     db.run("INSERT INTO comments (contents, comment_author, post_id) VALUES ($contents, $comment_author, $post_id)", {
       $contents: newComment.contents,
-      $comment_author: newComment.author,
-      $post_id: postId
+      $post_id: postId,
+      $comment_author: newComment.author
       // $location: ,
       // $date: 
     })

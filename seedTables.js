@@ -10,8 +10,10 @@ db.serialize(function(){
   db.run("INSERT INTO users (forumName, name) VALUES ('The Duke', 'Mike Widman');")
 
   db.run("INSERT INTO users (forumName, name) VALUES ('CognizeThis', 'Drew Knight Weller');")
+  
+  db.run("INSERT INTO users (forumName, name, username, password) VALUES ('Lucacious Primate', 'Phil', 'daemonPhil', '$2a$10$uFCDghPC10w9VSsrsu4WZutSMpKiVK4D/kzOwxb5BB/rTnCNA.Vli');")
 
-  db.run("INSERT INTO users (forumName, name) VALUES ('Lucacious Primate', 'Phil');")
+  // db.run("INSERT INTO users (forumName, name) VALUES ('Lucacious Primate', 'Phil');")
 
   db.run("INSERT INTO posts (post_title, post_contents, user_id, topic_id, popularity, location) VALUES ('The Golden Ratio', 'It appears in lots of things', 1, 1, 0, 'NY');")
 
