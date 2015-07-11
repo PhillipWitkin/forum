@@ -29,13 +29,7 @@ app.use(flash({message: 'message'}));
 app.use(passport.initialize());
 app.use(passport.session());
 
-//async function to generate hash from password
-function hashPassword(password){
-  bcrypt.hash(password, 10, function(err, hash){
-    console.log(hash)
-    //store hash in DB
-  })
-}
+
 //sync
 // var hashedPassword = bcrypt.hashSync(password, 10)
 
@@ -108,6 +102,47 @@ app.post('/login', passport.authenticate('local', {
   failureRedirect: '/login',
   failureFlash: true
 }))
+
+//registration page
+app.get('/register', function(req,res){
+  var templateRegister = fs.readFileSync('./pages/register.html', 'utf8');
+  var htmlRegister = Mustache.render(templateRegister, {error: ''})
+  res.send(htmlRegister)
+})
+
+app.post('/register', function(req,res){
+  var newUser = req.body
+  var templateRegister = fs.readFileSync('./pages/register.html', 'utf8');
+  if (!newUser.username || !newUser.password){
+    var errorMessage = "Username and password must be provided"
+    var htmlRegister = Mustache.render(templateRegister, {error: errorMessage})
+    res.send(htmlRegister)    
+  }else{
+    db.all("SELECT username FROM users WHERE (username = $username)", {$username: newUser.username}, function(err, user){
+      console.log(user)
+      if (!user[0]){
+        //hash password and send user info to DB
+        bcrypt.hash(newUser.password, 10, function(err, hash){
+          console.log(hash)
+          //store in DB
+          db.run("INSERT INTO users (username, password) VALUES ($username, $password)",{
+            $username: newUser.username,
+            $password: hash
+          })
+        res.redirect('/login')
+        })
+      }else {
+        var errorMessage = "Username already exists"      
+        var htmlRegister = Mustache.render(templateRegister, {error: errorMessage})
+        res.send(htmlRegister)
+      }
+    })
+    
+  }
+})
+
+
+
 
 //logout
 app.get('/logout', function(req, res){

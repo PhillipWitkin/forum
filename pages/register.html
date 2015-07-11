@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+</head>
+<body>
+  <h1>Welcome to the Science, Substance and Self Forum</h1>
+  <h2>A place for interdisciplanry discussion</h2> 
+  <h3>Register a username for the forum and a password below</h3>
+  <div>
+    <p>{{error}}</p>
+  </div>
+
+  <form action="/register" method="post">
+    <div>
+        <label>Username:</label>
+        <input type="text" name="username"/>
+    </div>
+    <div>
+        <label>Password:</label>
+        <input type="text" name="password"/>
+    </div>
+    <div>
+        <button type="submit">Register User</button>
+    </div>
+  </form>
+
+</body>
+</html>
