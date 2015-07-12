@@ -25,7 +25,7 @@ app.use(methodOverride('_method'));
 app.use(cookieParser());
 // app.use(session({ cookie: { maxAge: 60000 }}));
 app.use(cookieSession({name: 'session', keys:['userID']}))
-app.use(flash({message: 'message'}));
+app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -43,11 +43,14 @@ passport.use(new LocalStrategy(
   function(req, username, password, done){
     db.serialize(function(){
       db.all('SELECT password FROM users WHERE (username = $username)',{$username: username}, function(err, userData){
-        if (!userData) {
+        // if (err) { return done(err); }
+        if (!userData[0]) {
+          console.log("no user from db")
+          // req.flash('message', "no username found")
           return done(null, false, req.flash('message', "No username found."))
         }
         console.log(password)
-        console.log(userData[0].password)
+        console.log(userData)
         var passwordStatus = verifyPassword(password, userData[0].password)
         // bcrypt.compare(password, userData.password, function(err, res){       
         // })
@@ -88,11 +91,11 @@ app.get('/', function(req, res){
 
 // //login page
 app.get('/login', function(req, res){
-  console.log(req.flash('message'))
-  var loginMessage = req.flash('message')
-  
+  // console.log(req.flash())
+  var loginMessage = {message: req.flash('message')[0], error: req.flash('error')[0]}
+  console.log(loginMessage)
   var templateLogin = fs.readFileSync('./pages/login.html', 'utf8');
-  var htmlLogin = Mustache.render(templateLogin, {message: loginMessage});
+  var htmlLogin = Mustache.render(templateLogin, loginMessage);
   res.send(htmlLogin)
 })
 
@@ -113,6 +116,7 @@ app.get('/register', function(req,res){
 app.post('/register', function(req,res){
   var newUser = req.body
   var templateRegister = fs.readFileSync('./pages/register.html', 'utf8');
+  //check to make sure the username and password fields are not blank
   if (!newUser.username || !newUser.password){
     var errorMessage = "Username and password must be provided"
     var htmlRegister = Mustache.render(templateRegister, {error: errorMessage})
