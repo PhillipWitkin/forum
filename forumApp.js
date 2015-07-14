@@ -46,7 +46,6 @@ passport.use(new LocalStrategy(
         // if (err) { return done(err); }
         if (!userData[0]) {
           console.log("no user from db")
-          // req.flash('message', "no username found")
           return done(null, false, req.flash('message', "No username found."))
         }
         console.log(password)
@@ -92,7 +91,10 @@ app.get('/', function(req, res){
 // //login page
 app.get('/login', function(req, res){
   // console.log(req.flash())
-  var loginMessage = {message: req.flash('message')[0], error: req.flash('error')[0]}
+  var loginMessage = {
+    message: req.flash('message')[0], 
+    error: req.flash('error')[0]
+  }
   console.log(loginMessage)
   var templateLogin = fs.readFileSync('./pages/login.html', 'utf8');
   var htmlLogin = Mustache.render(templateLogin, loginMessage);
@@ -106,10 +108,19 @@ app.post('/login', passport.authenticate('local', {
   failureFlash: true
 }))
 
+// //login attempt
+// app.post('/topics/:id/posts/new_post/login', passport.authenticate('local', {
+//   successRedirect: '/topics/' + req.params.id + '/posts/new_post',
+//   failureRedirect: '/topics/' + req.params.id + '/posts/new_post',
+//   failureFlash: true
+// }))
+
+
 //registration page
 app.get('/register', function(req,res){
   var templateRegister = fs.readFileSync('./pages/register.html', 'utf8');
-  var htmlRegister = Mustache.render(templateRegister, {error: ''})
+  var errorMessage = {error: req.flash('error')[0]}
+  var htmlRegister = Mustache.render(templateRegister, errorMessage)
   res.send(htmlRegister)
 })
 
@@ -119,8 +130,8 @@ app.post('/register', function(req,res){
   //check to make sure the username and password fields are not blank
   if (!newUser.username || !newUser.password){
     var errorMessage = "Username and password must be provided"
-    var htmlRegister = Mustache.render(templateRegister, {error: errorMessage})
-    res.send(htmlRegister)    
+    req.flash('error', errorMessage)
+    res.redirect('/register');
   }else{
     db.all("SELECT username FROM users WHERE (username = $username)", {$username: newUser.username}, function(err, user){
       console.log(user)
@@ -133,12 +144,16 @@ app.post('/register', function(req,res){
             $username: newUser.username,
             $password: hash
           })
+        completeRegisterMessage = "Registration completed successfully. Welcome " + newUser.username + ", you can now log in"  
+        req.flash('message', completeRegisterMessage)  
         res.redirect('/login')
         })
       }else {
         var errorMessage = "Username already exists"      
-        var htmlRegister = Mustache.render(templateRegister, {error: errorMessage})
-        res.send(htmlRegister)
+        // var htmlRegister = Mustache.render(templateRegister, {error: errorMessage})
+        // res.send(htmlRegister)
+        req.flash('error', errorMessage)
+        res.redirect('/register');
       }
     })
     
@@ -199,9 +214,24 @@ app.put('/topics/topic_:id/posts', function(req, res) {
 app.get('/topics/:id/posts/new_post', function(req, res) {
   var topicId = req.params.id
   console.log(topicId);
+  if (req.user){
+    var userMessage = "You are logged in as " + req.user.username + ", which will appear as the post author."
+  }else {
+    var userMessage = "You are not logged in. You can post anonymously, or login to post with your username"
+    var loginDest = '/login'
+    var loginText = "Log in before posting"
+    // var newPostForm = fs.readFileSync('./pages/newPost_form_anonymous', 'utf8');
+  }
   db.all("SELECT * FROM topics WHERE (topicID = $id)", {$id: topicId}, function(err, topics) {
     var newPostForm = fs.readFileSync('./pages/newPost_form.html', 'utf8');
-    var htmlNewPostForm = Mustache.render(newPostForm, topics[0])
+    var renderData = {
+      topicID: topics[0].topicID,
+      topic_title: topics[0].topic_title,
+      message: userMessage,
+      loginRoute: loginDest,
+      loginText: loginText
+    }
+    var htmlNewPostForm = Mustache.render(newPostForm, renderData)
     res.send(htmlNewPostForm)  
   })
 })
@@ -211,16 +241,21 @@ app.post('/topics/:id/posts', function(req, res) {
   console.log(req.params)
   var topicId = req.params.id
   var postNew = req.body
-
-  // gets location for post
+  // if the user is logged in, they will be the author
+  if (req.user){
+    var postAuthor = req.user.username
+  }else {
+    var postAuthor = "anonymous"
+    var userId = null
+  }
 
     //insert post to database
-    db.run("INSERT INTO posts (post_title, post_contents, post_author, topic_id) VALUES ($title, $contents, $author, $topic_id)", {
+    db.run("INSERT INTO posts (post_title, post_contents, post_author, topic_id, user_id) VALUES ($title, $contents, $author, $topic_id, $user_id)", {
       $title: postNew.post_title,
       $contents: postNew.post_contents,
       $topic_id: topicId,
-      $author: postNew.post_author
-      // $user_id: newPost.user_id,
+      $author: postAuthor,
+      $user_id: userId
       // $location: ,
       // $date: 
     })
@@ -237,7 +272,7 @@ app.get('/topics/:topic_id/posts/:post_id/comments', function(req, res) {
     db.all("SELECT * FROM comments LEFT JOIN users ON (users.userID = comments.user_id) WHERE (post_id = $postId)", {$postId: postId}, function(err, comments){
 
       //get information for the post and the post's author
-      db.all("SELECT * FROM comments INNER JOIN posts ON (posts.postID = comments.post_id) LEFT JOIN users ON (users.userID = posts.user_id) WHERE (post_id = $postId)", {$postId: postId}, function(err, posts) {
+      db.all("SELECT * FROM posts LEFT JOIN users ON (users.userID = posts.user_id) WHERE (postID = $postId)", {$postId: postId}, function(err, posts) {
         var postMain = posts[0]
         displayComments(comments, postMain)
       })
@@ -250,7 +285,7 @@ app.get('/topics/:topic_id/posts/:post_id/comments', function(req, res) {
         allComments: comments,
         postTitle: post.post_title,
         postContents: post.post_contents,
-        postAuthor: post.forumName,
+        postAuthor: post.post_author,
         topic_id: topicId,
         post_id: postId
       })
@@ -266,7 +301,15 @@ app.get('/topics/:topic_id/posts/:post_id/comments', function(req, res) {
 app.get('/topics/:topic_id/posts/:post_id/comments/new_comment', function(req, res) {
   var postId = req.params.post_id
   var topicId = req.params.topic_id
-  db.all("SELECT * FROM comments INNER JOIN posts ON (posts.postID = comments.post_id) LEFT JOIN users ON (users.userID = posts.user_id) WHERE (post_id = $postId)", {$postId: postId}, function(err, posts){
+  if (req.user){
+    var userMessage = "You are logged in as " + req.user.username + ", which will appear as the post author."
+  }else {
+    var userMessage = "You are not logged in. You can post anonymously, or login to post with your username"
+    var loginDest = '/login'
+    var loginText = "Log in before posting"
+    // var newPostForm = fs.readFileSync('./pages/newPost_form_anonymous', 'utf8');
+  }
+  db.all("SELECT * FROM posts LEFT JOIN users ON (users.userID = posts.user_id) WHERE (postID = $postId)", {$postId: postId}, function(err, posts){
     var postForComment = posts[0]
     var template = fs.readFileSync('./pages/newComment_form.html', 'utf8');
     var htmlNewCommentForm = Mustache.render(template, {
@@ -275,7 +318,9 @@ app.get('/topics/:topic_id/posts/:post_id/comments/new_comment', function(req, r
       postTitle: postForComment.post_title,
       postContents: postForComment.post_contents,
       postUserName: postForComment.forumName,
-      postAuthor: postForComment.post_author
+      postAuthor: postForComment.post_author,
+      message: userMessage,
+      loginText: loginText
     })
   
     res.send(htmlNewCommentForm)
@@ -288,12 +333,19 @@ app.post('/topics/:topic_id/posts/:post_id/comments', function(req, res) {
   var topicId = req.params.topic_id
   var postId = req.params.post_id
   var newComment = req.body
-
+  // if the user is logged in, they will be the author
+  if (req.user){
+    var commentAuthor = req.user.username
+  }else {
+    var commentAuthor = "anonymous"
+    var userId = null
+  }
     //insert comment to database
-    db.run("INSERT INTO comments (contents, comment_author, post_id) VALUES ($contents, $comment_author, $post_id)", {
-      $contents: newComment.contents,
+    db.run("INSERT INTO comments (post_id, contents, comment_author, user_id) VALUES ($post_id, $contents, $comment_author, $user_id)", {
       $post_id: postId,
-      $comment_author: newComment.author
+      $contents: newComment.contents,
+      $comment_author: commentAuthor,
+      $user_id: userId
       // $location: ,
       // $date: 
     })

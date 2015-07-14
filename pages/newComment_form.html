@@ -6,7 +6,11 @@
 </head>
 <body>
   <h1> Add a new comment for {{postTitle}}</h1>
-  <h2> Originally posted by {{postUserName}} {{postAuthor}}</h2>
+  <h2>{{postContents}}</h2>
+  <h3> Originally posted by {{postUserName}} {{postAuthor}}</h3>
+
+  <h2>{{message}}</h2>
+  <a href='{{loginRoute}}'>{{loginText}}</a>
 
   <form action="/topics/{{topic_id}}/posts/{{post_id}}/comments" method="POST">
     
@@ -14,11 +18,7 @@
       New Comment:
       <input type="text" name="contents" placeholder="your comment"/>
     </label>
-    
-    <label>
-      Author:
-      <input type="text" name="author"/>
-    </label>
+
     
     <button>Submit Comment</button>
 
