@@ -286,6 +286,7 @@ app.get('/topics/:topic_id/posts/:post_id/comments', function(req, res) {
         postTitle: post.post_title,
         postContents: post.post_contents,
         postAuthor: post.post_author,
+        forumName: post.forumName,
         topic_id: topicId,
         post_id: postId
       })
@@ -320,7 +321,8 @@ app.get('/topics/:topic_id/posts/:post_id/comments/new_comment', function(req, r
       postUserName: postForComment.forumName,
       postAuthor: postForComment.post_author,
       message: userMessage,
-      loginText: loginText
+      loginText: loginText,
+      loginRoute: loginDest
     })
   
     res.send(htmlNewCommentForm)
