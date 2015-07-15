@@ -183,6 +183,7 @@ app.get('/topics', function(req, res) {
 //lists all posts under a topic
 app.get('/topics/:id/posts', function(req, res) {
   console.log(req.params)
+  console.log(req.user)
   var topicId = req.params.id
   // console.log(topicId)
   var postsTemplate = fs.readFileSync('./pages/posts.html', 'utf8');
@@ -238,12 +239,13 @@ app.get('/topics/:id/posts/new_post', function(req, res) {
 
 //adds a new post under a topic
 app.post('/topics/:id/posts', function(req, res) {
-  console.log(req.params)
+  // console.log(req.user)
   var topicId = req.params.id
   var postNew = req.body
   // if the user is logged in, they will be the author
   if (req.user){
     var postAuthor = req.user.username
+    var userId = req.user.userID
   }else {
     var postAuthor = "anonymous"
     var userId = null
@@ -338,6 +340,7 @@ app.post('/topics/:topic_id/posts/:post_id/comments', function(req, res) {
   // if the user is logged in, they will be the author
   if (req.user){
     var commentAuthor = req.user.username
+    var userId = req.user.userID
   }else {
     var commentAuthor = "anonymous"
     var userId = null
